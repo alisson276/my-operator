@@ -8,4 +8,14 @@ layout:
 - go.kubebuilder.io/v4
 projectName: first-k8s-operator
 repo: github.com/alisson276/my-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: operator.com
+  group: mygroup
+  kind: MyKind
+  path: github.com/alisson276/my-operator/api/v1alpha1
+  version: v1alpha1
 version: "3"
