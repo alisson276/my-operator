@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -25,6 +26,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	mygroupv1alpha1 "github.com/alisson276/my-operator/api/v1alpha1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // MyKindReconciler reconciles a MyKind object
@@ -47,9 +49,31 @@ type MyKindReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.21.0/pkg/reconcile
 func (r *MyKindReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = logf.FromContext(ctx)
+	log := logf.FromContext(ctx)
 
-	// TODO(user): your logic here
+	myKind := &mygroupv1alpha1.MyKind{}
+	if err := r.Get(ctx, req.NamespacedName, myKind); err != nil {
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+	log.Info(fmt.Sprintf("Got \"%v\" from spec.foo", *myKind.Spec.Foo))
+	//time := metav1.Time{Time: time.Now()}
+
+	var newConditions = make([]metav1.Condition, 0)
+	myKind.Status.Conditions = newConditions
+	err := r.Client.Status().Update(ctx, myKind)
+	if err != nil {
+		log.Error(err, "Application resource status update failed 11111.")
+	}
+
+	// condition := metav1.Condition{Type: "Lixo", Status: "True", Reason: "Nothing", Message: "OK", LastTransitionTime: time}
+	// myKind.Status.Conditions = append(myKind.Status.Conditions, condition)
+
+	// err = r.Client.Status().Update(ctx, myKind)
+	// if err != nil {
+	// 	log.Error(err, "Application resource status update failed 222222.")
+	// }
+
+	log.Info(fmt.Sprintf("Status.Conditions: %v", myKind.Status.Conditions))
 
 	return ctrl.Result{}, nil
 }
